@@ -12,6 +12,7 @@ import (
 	"ttshub/internal/config"
 	"ttshub/internal/handlers"
 	"ttshub/internal/utils"
+	"path/filepath"
 
 	"go.uber.org/zap"
 )
@@ -24,8 +25,10 @@ func main() {
 	cfg := config.GetConfig()
 
 	// 初始化数据库
-	if err := config.InitDatabase(); err != nil {
-		utils.Fatal("数据库初始化失败", zap.Error(err))
+	if err := config.InitDatabase(cfg.Database.Path); err != nil {
+		utils.Warn("数据库初始化失败", zap.Error(err))
+		utils.Warn("应用将以无数据库模式运行", zap.String("mode", "no-db"))
+		// 继续运行而不是退出
 	}
 
 	// 设置路由
@@ -73,21 +76,34 @@ func main() {
 	utils.SyncLogger()
 }
 
+// ensureDataDir 确保数据目录存在
+func ensureDataDir(dbPath string) {
+	dir := filepath.Dir(dbPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		utils.Fatal("数据目录创建失败", zap.Error(err))
+	}
+}
+
 // initApp 初始化应用
 func initApp() {
+	// 加载配置
+	cfg, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatalf("配置加载失败: %v", err)
+	}
+
 	// 初始化日志
-	if err := utils.InitLogger(); err != nil {
+	if err := utils.InitLogger(&cfg.Log); err != nil {
 		log.Fatalf("日志初始化失败: %v", err)
 	}
 
-	// 加载配置
-	if err := config.LoadConfig(); err != nil {
-		utils.Fatal("配置加载失败", zap.Error(err))
-	}
-
 	// 确保数据目录存在
-	if err := config.EnsureDataDir(); err != nil {
-		utils.Fatal("数据目录创建失败", zap.Error(err))
+	ensureDataDir(cfg.Database.Path)
+
+	// 初始化数据库
+	if err := config.InitDatabase(cfg.Database.Path); err != nil {
+		utils.Warn("数据库初始化失败", zap.Error(err))
+		utils.Warn("应用将以无数据库模式运行", zap.String("mode", "no-db"))
 	}
 
 	utils.Info("TTSHub服务启动")

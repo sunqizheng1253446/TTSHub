@@ -16,12 +16,33 @@ type Config struct {
 	Database DatabaseConfig `mapstructure:"database"`
 	Log      LogConfig      `mapstructure:"log"`
 	OpenAI   OpenAIConfig   `mapstructure:"openai"`
+	CORS     CORSConfig     `mapstructure:"cors"`
+	Security SecurityConfig `mapstructure:"security"`
+}
+
+// CORSConfig CORS配置
+type CORSConfig struct {
+	AllowedOrigins []string `mapstructure:"allowed_origins"`
+	AllowedMethods []string `mapstructure:"allowed_methods"`
+	AllowedHeaders []string `mapstructure:"allowed_headers"`
+	AllowCredentials bool   `mapstructure:"allow_credentials"`
+	MaxAge          int     `mapstructure:"max_age"`
+}
+
+// SecurityConfig 安全配置
+type SecurityConfig struct {
+	EnableAPIKey bool   `mapstructure:"enable_api_key"`
+	DefaultAPIKey string `mapstructure:"default_api_key"`
 }
 
 // ServerConfig 服务器配置
 type ServerConfig struct {
-	Port string `mapstructure:"port"`
-	Host string `mapstructure:"host"`
+	Port         string `mapstructure:"port"`
+	Host         string `mapstructure:"host"`
+	ReadTimeout  int    `mapstructure:"read_timeout"`
+	WriteTimeout int    `mapstructure:"write_timeout"`
+	IdleTimeout  int    `mapstructure:"idle_timeout"`
+	Mode         string `mapstructure:"mode"`
 }
 
 // DatabaseConfig 数据库配置
@@ -94,14 +115,30 @@ func LoadConfig(configPath string) (*Config, error) {
 func setDefaultConfig() {
 	viper.SetDefault("server.port", common.DefaultServerPort)
 	viper.SetDefault("server.host", "0.0.0.0")
+	viper.SetDefault("server.read_timeout", 30)
+	viper.SetDefault("server.write_timeout", 30)
+	viper.SetDefault("server.idle_timeout", 60)
+	viper.SetDefault("server.mode", "release")
+	
 	viper.SetDefault("database.path", common.DefaultDatabasePath)
+	
 	viper.SetDefault("log.level", common.DefaultLogLevel)
 	viper.SetDefault("log.path", "./logs")
 	viper.SetDefault("log.format", "json")
+	
 	viper.SetDefault("openai.base_url", "https://api.openai.com")
 	viper.SetDefault("openai.model", "tts-1")
 	viper.SetDefault("openai.timeout", 30)
 	viper.SetDefault("openai.max_tokens", 4096)
+	
+	viper.SetDefault("cors.allowed_origins", []string{"*"})
+	viper.SetDefault("cors.allowed_methods", []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
+	viper.SetDefault("cors.allowed_headers", []string{"Origin", "Content-Type", "Accept", "Authorization"})
+	viper.SetDefault("cors.allow_credentials", true)
+	viper.SetDefault("cors.max_age", 86400)
+	
+	viper.SetDefault("security.enable_api_key", false)
+	viper.SetDefault("security.default_api_key", "")
 }
 
 // 创建默认配置文件

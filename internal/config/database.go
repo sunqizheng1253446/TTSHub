@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+
 	"ttshub/internal/models"
 
 	"gorm.io/driver/sqlite"
@@ -81,7 +82,6 @@ func initDefaultData(db *gorm.DB) error {
 
 	// 创建默认OpenAI渠道配置
 	defaultChannel := &models.ChannelConfig{
-		ID:     "default_openai",
 		Name:   "默认OpenAI渠道",
 		Type:   "openai",
 		Config: `{"api_key":"","model":"tts-1","voice":"alloy"}`,
@@ -90,7 +90,6 @@ func initDefaultData(db *gorm.DB) error {
 
 	// 创建默认自定义渠道配置模板
 	customChannel := &models.ChannelConfig{
-		ID:     "default_custom",
 		Name:   "自定义渠道模板",
 		Type:   "custom",
 		Config: `{"param1":"value1","param2":"value2"}`,

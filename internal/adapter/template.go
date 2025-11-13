@@ -6,10 +6,21 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"ttshub/internal/models"
 	"ttshub/internal/utils"
 
 	"go.uber.org/zap"
 )
+
+// AdapterInfo 适配器信息
+type AdapterInfo struct {
+	TypeID   string   `json:"type_id"`
+	Name     string   `json:"name"`
+	Version  string   `json:"version"`
+	Provider string   `json:"provider"`
+	Features []string `json:"features"`
+	Status   string   `json:"status"`
+}
 
 // ChannelTemplate 是一个示例模板，用于快速创建新的TTS渠道适配器
 // 开发者可以复制这个文件，重命名并根据实际渠道的API规范进行修改
@@ -48,17 +59,47 @@ func NewTemplateAdapter() TTSAdapter {
 	}
 }
 
-// Init 初始化适配器
-func (a *TemplateAdapter) Init(configJSON string) error {
-	// 解析配置JSON
+// ValidateConfig 验证配置（接口实现）
+func (a *TemplateAdapter) ValidateConfig() error {
+	// 实现配置验证逻辑
+	return nil
+}
+
+// validateConfig 验证配置是否有效
+func (a *TemplateAdapter) validateConfig(configJSON string) error {
 	config := &TemplateConfig{}
 	if err := json.Unmarshal([]byte(configJSON), config); err != nil {
 		return utils.NewBadRequestError("配置解析失败: " + err.Error())
 	}
 
-	// 验证配置
-	if err := a.ValidateConfig(configJSON); err != nil {
+	// 基本验证
+	if config.APIKey == "" {
+		return utils.NewBadRequestError("API密钥不能为空")
+	}
+
+	if config.BaseURL == "" {
+		return utils.NewBadRequestError("基础URL不能为空")
+	}
+
+	// 验证URL格式
+	if !strings.HasPrefix(config.BaseURL, "http://") && !strings.HasPrefix(config.BaseURL, "https://") {
+		return utils.NewBadRequestError("基础URL必须以http://或https://开头")
+	}
+
+	return nil
+}
+
+// Init 初始化适配器
+func (a *TemplateAdapter) Init(configJSON string) error {
+	// 先验证配置
+	if err := a.validateConfig(configJSON); err != nil {
 		return err
+	}
+
+	// 解析配置JSON
+	config := &TemplateConfig{}
+	if err := json.Unmarshal([]byte(configJSON), config); err != nil {
+		return utils.NewBadRequestError("配置解析失败: " + err.Error())
 	}
 
 	// 设置HTTP客户端
@@ -75,68 +116,15 @@ func (a *TemplateAdapter) Init(configJSON string) error {
 	return nil
 }
 
-// ValidateConfig 验证配置是否有效
-func (a *TemplateAdapter) ValidateConfig(configJSON string) error {
-	config := &TemplateConfig{}
-	if err := json.Unmarshal([]byte(configJSON), config); err != nil {
-		return utils.NewBadRequestError("配置解析失败: " + err.Error())
-	}
-
-	// 基本验证 - 可以使用更复杂的验证库
-	if config.APIKey == "" {
-		return utils.NewBadRequestError("API密钥不能为空")
-	}
-
-	if config.BaseURL == "" {
-		return utils.NewBadRequestError("基础URL不能为空")
-	}
-
-	// 验证URL格式
-	if !strings.HasPrefix(config.BaseURL, "http://") && !strings.HasPrefix(config.BaseURL, "https://") {
-		return utils.NewBadRequestError("基础URL必须以http://或https://开头")
-	}
-
-	// 验证超时设置
-	if config.Timeout < 1 || config.Timeout > 60 {
-		return utils.NewBadRequestError("超时设置必须在1-60秒之间")
-	}
-
-	// 验证重试设置
-	if config.MaxRetries < 0 || config.MaxRetries > 5 {
-		return utils.NewBadRequestError("最大重试次数必须在0-5之间")
-	}
-
-	// 如果启用代理，验证代理URL
-	if config.EnableProxy {
-		if config.ProxyURL == "" {
-			return utils.NewBadRequestError("启用代理时必须设置代理URL")
-		}
-		if !strings.HasPrefix(config.ProxyURL, "http://") && !strings.HasPrefix(config.ProxyURL, "https://") {
-			return utils.NewBadRequestError("代理URL必须以http://或https://开头")
-		}
-	}
-
-	// 验证渠道特定配置
-	if config.DefaultVoice == "" {
-		return utils.NewBadRequestError("默认语音不能为空")
-	}
-
-	if config.DefaultSpeed < 0.1 || config.DefaultSpeed > 3.0 {
-		return utils.NewBadRequestError("语音速度必须在0.1-3.0之间")
-	}
-
-	validFormats := map[string]bool{"mp3": true, "wav": true, "ogg": true}
-	if !validFormats[config.DefaultFormat] {
-		return utils.NewBadRequestError("无效的音频格式，支持的格式: mp3, wav, ogg")
-	}
-
-	return nil
+// GetChannelName 获取渠道名称
+func (a *TemplateAdapter) GetChannelName() string {
+	return a.name
 }
 
 // ConvertRequest 将通用请求转换为OpenAI TTS格式
-func (a *TemplateAdapter) ConvertRequest(req *TTSSynthesizeRequest) (*OpenAIRequest, error) {
+func (a *TemplateAdapter) ConvertRequest(req *models.TTSRequest) (*models.OpenAIRequest, error) {
 	if a.config == nil {
-		return nil, utils.NewInternalError("适配器未初始化")
+		return nil, utils.NewInternalError("适配器未初始化", nil)
 	}
 
 	// 使用渠道特定配置或请求参数
@@ -151,12 +139,10 @@ func (a *TemplateAdapter) ConvertRequest(req *TTSSynthesizeRequest) (*OpenAIRequ
 	}
 
 	// 创建OpenAI格式的请求
-	openAIReq := &OpenAIRequest{
+	openAIReq := &models.OpenAIRequest{
 		Model:  "tts-1", // 或根据实际需求选择模型
 		Input:  req.Text,
 		Voice:  mapVoiceToOpenAI(voice), // 需要实现语音映射函数
-		Speed:  speed,
-		Format: a.config.DefaultFormat,
 	}
 
 	return openAIReq, nil
@@ -185,7 +171,7 @@ func mapVoiceToOpenAI(voice string) string {
 
 // Synthesize 直接调用渠道API进行文本转语音（可选实现）
 // 注意：如果直接调用渠道API，需要确保返回格式与OpenAI兼容
-func (a *TemplateAdapter) Synthesize(req *TTSSynthesizeRequest) ([]byte, string, error) {
+func (a *TemplateAdapter) Synthesize(req *models.TTSRequest) ([]byte, string, error) {
 	// 这里可以实现直接调用渠道API的逻辑
 	// 但根据项目需求，我们主要使用ConvertRequest将请求转换为OpenAI格式
 	// 然后由OpenAI客户端处理实际的API调用
@@ -220,7 +206,7 @@ func (a *TemplateAdapter) GetConfig() interface{} {
 // TestConnection 测试与渠道API的连接
 func (a *TemplateAdapter) TestConnection() error {
 	if a.config == nil {
-		return utils.NewInternalError("适配器未初始化")
+		return utils.NewInternalError("适配器未初始化", nil)
 	}
 
 	// 构建测试URL - 根据实际API文档调整
@@ -229,7 +215,7 @@ func (a *TemplateAdapter) TestConnection() error {
 	// 创建请求
 	req, err := http.NewRequest("GET", testURL, nil)
 	if err != nil {
-		return utils.NewInternalError("创建请求失败: " + err.Error())
+		return utils.NewInternalError("创建请求失败: "+err.Error(), nil)
 	}
 
 	// 设置认证头 - 根据实际API文档调整

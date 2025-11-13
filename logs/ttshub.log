@@ -1,0 +1,18 @@
+{"level":"info","timestamp":"2025-11-13T21:33:47.361+0800","caller":"utils/logger.go:82","msg":"日志系统初始化完成","log_path":"logs\\ttshub.log","level":"info"}
+{"level":"info","timestamp":"2025-11-13T21:33:47.384+0800","caller":"adapter/registry.go:63","msg":"适配器注册成功","name":"openai"}
+{"level":"info","timestamp":"2025-11-13T21:33:47.384+0800","caller":"adapter/registry.go:63","msg":"适配器注册成功","name":"custom"}
+{"level":"info","timestamp":"2025-11-13T21:33:47.387+0800","caller":"adapter/registry.go:132","msg":"内置适配器注册完成","count":2}
+{"level":"info","timestamp":"2025-11-13T21:33:47.393+0800","caller":"ttshub/main.go:94","msg":"日志系统初始化完成","log_path":"logs\\ttshub.log","level":"info"}
+{"level":"fatal","timestamp":"2025-11-13T21:33:47.393+0800","caller":"ttshub/main.go:103","msg":"数据库初始化失败","error":"Binary was compiled with 'CGO_ENABLED=0', go-sqlite3 requires cgo to work. This is a stub"}
+{"level":"info","timestamp":"2025-11-13T21:38:05.643+0800","caller":"utils/logger.go:82","msg":"日志系统初始化完成","log_path":"logs\\ttshub.log","level":"info"}
+{"level":"info","timestamp":"2025-11-13T21:38:05.661+0800","caller":"adapter/registry.go:63","msg":"适配器注册成功","name":"openai"}
+{"level":"info","timestamp":"2025-11-13T21:38:05.662+0800","caller":"adapter/registry.go:63","msg":"适配器注册成功","name":"custom"}
+{"level":"info","timestamp":"2025-11-13T21:38:05.662+0800","caller":"adapter/registry.go:132","msg":"内置适配器注册完成","count":2}
+{"level":"info","timestamp":"2025-11-13T21:38:05.665+0800","caller":"ttshub/main.go:94","msg":"日志系统初始化完成","log_path":"logs\\ttshub.log","level":"info"}
+{"level":"fatal","timestamp":"2025-11-13T21:38:05.666+0800","caller":"ttshub/main.go:103","msg":"数据库初始化失败","error":"Binary was compiled with 'CGO_ENABLED=0', go-sqlite3 requires cgo to work. This is a stub"}
+{"level":"info","timestamp":"2025-11-13T21:40:32.572+0800","caller":"utils/logger.go:82","msg":"日志系统初始化完成","log_path":"logs\\ttshub.log","level":"info"}
+{"level":"info","timestamp":"2025-11-13T21:40:32.592+0800","caller":"adapter/registry.go:63","msg":"适配器注册成功","name":"openai"}
+{"level":"info","timestamp":"2025-11-13T21:40:32.592+0800","caller":"adapter/registry.go:63","msg":"适配器注册成功","name":"custom"}
+{"level":"info","timestamp":"2025-11-13T21:40:32.593+0800","caller":"adapter/registry.go:132","msg":"内置适配器注册完成","count":2}
+{"level":"info","timestamp":"2025-11-13T21:40:32.597+0800","caller":"ttshub/main.go:94","msg":"日志系统初始化完成","log_path":"logs\\ttshub.log","level":"info"}
+{"level":"fatal","timestamp":"2025-11-13T21:40:32.598+0800","caller":"ttshub/main.go:103","msg":"数据库初始化失败","error":"Binary was compiled with 'CGO_ENABLED=0', go-sqlite3 requires cgo to work. This is a stub"}

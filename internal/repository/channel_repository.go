@@ -20,7 +20,7 @@ type ChannelRepository interface {
 	GetByType(channelType string) ([]*models.ChannelConfig, error)
 	ListAll() ([]*models.ChannelConfig, error)
 	ListEnabled() ([]*models.ChannelConfig, error)
-	UpdateStatus(id uint, status string) error
+	UpdateStatus(id uint, status int) error
 	ValidateUniqueName(name string, excludeID uint) error
 }
 
@@ -56,8 +56,8 @@ func (r *channelRepository) Create(channel *models.ChannelConfig) error {
 	}
 
 	// 设置默认值
-	if channel.Status == "" {
-		channel.Status = "enabled"
+	if channel.Status == 0 {
+		channel.Status = 1 // 1: 启用
 	}
 
 	if channel.Type == "" {
@@ -197,7 +197,7 @@ func (r *channelRepository) ListAll() ([]*models.ChannelConfig, error) {
 // ListEnabled 获取所有启用的渠道配置
 func (r *channelRepository) ListEnabled() ([]*models.ChannelConfig, error) {
 	channels := []*models.ChannelConfig{}
-	result := r.db.Where("status = ?", "enabled").Order("created_at DESC").Find(&channels)
+	result := r.db.Where("status = ?", 1).Order("created_at DESC").Find(&channels)
 	if result.Error != nil {
 		utils.Error("获取启用的渠道配置失败", zap.Error(result.Error))
 		return nil, fmt.Errorf("获取启用的渠道配置失败: %w", result.Error)
@@ -207,24 +207,24 @@ func (r *channelRepository) ListEnabled() ([]*models.ChannelConfig, error) {
 }
 
 // UpdateStatus 更新渠道状态
-func (r *channelRepository) UpdateStatus(id uint, status string) error {
+func (r *channelRepository) UpdateStatus(id uint, status int) error {
 	if id == 0 {
 		return fmt.Errorf("无效的渠道ID")
 	}
 
 	// 验证状态值
-	validStatus := map[string]bool{
-		"enabled":  true,
-		"disabled": true,
+	validStatus := map[int]bool{
+		1: true, // 启用
+		0: true, // 禁用
 	}
 	if !validStatus[status] {
-		return fmt.Errorf("无效的状态值: %s", status)
+		return fmt.Errorf("无效的状态值: %d", status)
 	}
 
 	// 执行更新
 	result := r.db.Model(&models.ChannelConfig{}).Where("id = ?", id).Update("status", status)
 	if result.Error != nil {
-		utils.Error("更新渠道状态失败", zap.Error(result.Error), zap.Uint("id", id), zap.String("status", status))
+		utils.Error("更新渠道状态失败", zap.Error(result.Error), zap.Uint("id", id), zap.Int("status", status))
 		return fmt.Errorf("更新渠道状态失败: %w", result.Error)
 	}
 
@@ -232,7 +232,7 @@ func (r *channelRepository) UpdateStatus(id uint, status string) error {
 		return fmt.Errorf("渠道配置不存在")
 	}
 
-	utils.Info("渠道状态更新成功", zap.Uint("id", id), zap.String("status", status))
+	utils.Info("渠道状态更新成功", zap.Uint("id", id), zap.Int("status", status))
 	return nil
 }
 

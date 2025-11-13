@@ -111,3 +111,10 @@ func Error(msg string, fields ...zapcore.Field) {
 func Fatal(msg string, fields ...zapcore.Field) {
 	GetLogger().Fatal(msg, fields...)
 }
+
+// SyncLogger 同步日志
+func SyncLogger() {
+	if Logger != nil {
+		Logger.Sync()
+	}
+}

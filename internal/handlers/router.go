@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 	"ttshub/internal/config"
 	"ttshub/internal/repository"
 	"ttshub/internal/service"
@@ -123,12 +124,12 @@ func corsMiddleware() gin.HandlerFunc {
 	cfg := config.GetConfig()
 	
 	corsConfig := cors.Config{
-		AllowOrigins:     cfg.Server.AllowedOrigins,
+		AllowOrigins:     cfg.CORS.AllowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length", "X-TTS-Duration", "X-TTS-Channel"},
-		AllowCredentials: true,
-		MaxAge:           86400,
+		AllowCredentials: cfg.CORS.AllowCredentials,
+		MaxAge:           time.Duration(cfg.CORS.MaxAge) * time.Second,
 	}
 
 	return cors.New(corsConfig)

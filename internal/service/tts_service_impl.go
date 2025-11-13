@@ -8,6 +8,7 @@ import (
 	"ttshub/internal/models"
 	"ttshub/internal/repository"
 	"ttshub/internal/utils"
+	"ttshub/pkg/common"
 
 	"go.uber.org/zap"
 )
@@ -44,19 +45,19 @@ func (s *TTSServiceImpl) Synthesize(ctx context.Context, request *models.TTSRequ
 	}
 
 	// 确保渠道已启用
-	if channel.Status != "enabled" {
+	if channel.Status != common.ChannelStatusEnabled {
 		return nil, utils.NewBadRequestError("渠道未启用")
 	}
 
 	// 创建并初始化适配器
 	adapterInstance, err := adapter.CreateAdapterByName(channel.Type)
 	if err != nil {
-		return nil, utils.NewInternalError(fmt.Sprintf("适配器创建失败: %v", err))
+		return nil, utils.NewInternalError(fmt.Sprintf("适配器创建失败: %v", err), err)
 	}
 
 	// 初始化适配器配置
 	if err := adapterInstance.Init(channel.Config); err != nil {
-		return nil, utils.NewInternalError(fmt.Sprintf("适配器初始化失败: %v", err))
+		return nil, utils.NewInternalError(fmt.Sprintf("适配器初始化失败: %v", err), err)
 	}
 
 	// 验证适配器配置

@@ -70,6 +70,34 @@ func NewOpenAIError(message string, err error) *AppError {
 	return NewAppError(common.ErrCodeOpenAIError, message, err)
 }
 
+// NewNotImplementedError 创建未实现错误
+func NewNotImplementedError(message string) *AppError {
+	return NewAppError(common.ErrCodeInternalError, message, nil)
+}
+
+// NewExternalError 创建外部服务错误
+func NewExternalError(message string) *AppError {
+	return NewAppError(common.ErrCodeOpenAIError, message, nil)
+}
+
+// StatusCode 返回HTTP状态码
+func (e *AppError) StatusCode() int {
+	switch e.Code {
+	case common.ErrCodeInvalidRequest, common.ErrCodeChannelDisabled, common.ErrCodeInvalidConfig:
+		return 400
+	case common.ErrCodeUnauthorized:
+		return 401
+	case common.ErrCodeForbidden:
+		return 403
+	case common.ErrCodeNotFound, common.ErrCodeChannelNotFound:
+		return 404
+	case common.ErrCodeInternalError, common.ErrCodeOpenAIError:
+		return 500
+	default:
+		return 500
+	}
+}
+
 // IsAppError 检查是否为应用错误
 func IsAppError(err error) bool {
 	_, ok := err.(*AppError)

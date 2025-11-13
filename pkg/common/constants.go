@@ -37,3 +37,17 @@ const (
 const (
 	APIVersionV1 = "v1"
 )
+
+// 常见错误信息
+const (
+	ErrMsgSuccess           = "操作成功"
+	ErrMsgInvalidRequest    = "请求参数无效"
+	ErrMsgUnauthorized      = "未授权访问"
+	ErrMsgForbidden         = "禁止访问"
+	ErrMsgNotFound          = "资源不存在"
+	ErrMsgInternalError     = "内部服务器错误"
+	ErrMsgChannelNotFound   = "TTS渠道不存在"
+	ErrMsgChannelDisabled   = "TTS渠道已禁用"
+	ErrMsgInvalidConfig     = "配置无效"
+	ErrMsgOpenAIError       = "OpenAI API错误"
+)

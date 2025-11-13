@@ -54,7 +54,7 @@ func (r *adapterRegistry) Register(name string, factory AdapterFactory) {
 		return
 	}
 
-	oldFactory, exists := r.adapters[name]
+	_, exists := r.adapters[name]
 	r.adapters[name] = factory
 
 	if exists {
