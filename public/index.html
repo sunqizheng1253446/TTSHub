@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTSHub - 多渠道TTS服务管理平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 使用CDN引入基础UI库 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.12.8/dist/reset.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 头部导航 -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1 class="logo">TTS<span>Hub</span></h1>
+                    <span class="version">v1.0.0</span>
+                </div>
+                <nav class="main-nav">
+                    <ul class="nav-menu">
+                        <li class="nav-item active" data-target="dashboard">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">控制台</span>
+                        </li>
+                        <li class="nav-item" data-target="channels">
+                            <span class="nav-icon">📡</span>
+                            <span class="nav-text">渠道管理</span>
+                        </li>
+                        <li class="nav-item" data-target="test">
+                            <span class="nav-icon">🎤</span>
+                            <span class="nav-text">TTS测试</span>
+                        </li>
+                        <li class="nav-item" data-target="logs">
+                            <span class="nav-icon">📝</span>
+                            <span class="nav-text">日志查询</span>
+                        </li>
+                        <li class="nav-item" data-target="settings">
+                            <span class="nav-icon">⚙️</span>
+                            <span class="nav-text">系统设置</span>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="user-section">
+                    <button id="theme-toggle" class="theme-btn">🌙</button>
+                    <div class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">运行中</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="app-main">
+            <!-- 控制台面板 -->
+            <section id="dashboard" class="panel active">
+                <div class="panel-header">
+                    <h2>控制台</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="quick-test-btn">快速测试</button>
+                        <button class="btn btn-secondary" id="refresh-stats">刷新数据</button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📡</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="active-channels">0</div>
+                            <div class="stat-label">活跃渠道</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎵</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="today-requests">0</div>
+                            <div class="stat-label">今日请求</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="avg-response-time">0</div>
+                            <div class="stat-label">平均响应时间(ms)</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="success-rate">0%</div>
+                            <div class="stat-label">成功率</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>最近活动</h3>
+                    <div class="activity-list" id="activity-log"></div>
+                </div>
+            </section>
+
+            <!-- 渠道管理面板 -->
+            <section id="channels" class="panel">
+                <div class="panel-header">
+                    <h2>渠道管理</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="add-channel-btn">添加渠道</button>
+                        <div class="search-box">
+                            <input type="text" id="channel-search" placeholder="搜索渠道...">
+                            <button class="search-btn">🔍</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="channels-container">
+                    <div class="channels-toolbar">
+                        <div class="filter-group">
+                            <label>类型:</label>
+                            <select id="channel-type-filter">
+                                <option value="all">全部类型</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="custom">自定义渠道</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>状态:</label>
+                            <select id="channel-status-filter">
+                                <option value="all">全部状态</option>
+                                <option value="active">活跃</option>
+                                <option value="inactive">非活跃</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="channels-list" id="channels-list">
+                        <!-- 渠道列表将通过JavaScript动态生成 -->
+                        <div class="empty-state">
+                            <div class="empty-icon">📡</div>
+                            <p>暂无渠道配置</p>
+                            <p class="empty-hint">点击"添加渠道"按钮开始配置</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TTS测试面板 -->
+            <section id="test" class="panel">
+                <div class="panel-header">
+                    <h2>TTS测试</h2>
+                </div>
+                
+                <div class="test-container">
+                    <div class="test-form">
+                        <div class="form-group">
+                            <label for="test-channel">选择渠道:</label>
+                            <select id="test-channel">
+                                <option value="">-- 请选择渠道 --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="test-text">文本内容:</label>
+                            <textarea id="test-text" rows="5" placeholder="请输入要转换的文本内容..."></textarea>
+                            <div class="char-count"><span id="text-length">0</span> 字符</div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="test-voice">语音选择:</label>
+                                <select id="test-voice">
+                                    <option value="">-- 请选择语音 --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="test-speed">语速:</label>
+                                <input type="range" id="test-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                                <span id="speed-value">1.0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="test-btn">开始测试</button>
+                            <button class="btn btn-secondary" id="clear-test">清空</button>
+                        </div>
+                    </div>
+                    
+                    <div class="test-result">
+                        <h3>测试结果</h3>
+                        <div class="audio-player" id="audio-player">
+                            <div class="empty-player">
+                                <div class="empty-icon">🎵</div>
+                                <p>测试结果将显示在这里</p>
+                            </div>
+                        </div>
+                        <div class="test-info">
+                            <div class="info-item">
+                                <span class="info-label">转换时间:</span>
+                                <span id="convert-time">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">音频时长:</span>
+                                <span id="audio-duration">--</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">文件大小:</span>
+                                <span id="audio-size">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 日志查询面板 -->
+            <section id="logs" class="panel">
+                <div class="panel-header">
+                    <h2>日志查询</h2>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <input type="text" id="log-search" placeholder="搜索日志...">
+                            <button class="search-btn">🔍</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logs-container">
+                    <div class="logs-toolbar">
+                        <div class="filter-group">
+                            <label>级别:</label>
+                            <select id="log-level-filter">
+                                <option value="all">全部级别</option>
+                                <option value="debug">DEBUG</option>
+                                <option value="info">INFO</option>
+                                <option value="warn">WARN</option>
+                                <option value="error">ERROR</option>
+                                <option value="fatal">FATAL</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>时间范围:</label>
+                            <input type="date" id="log-date-from">
+                            <input type="date" id="log-date-to">
+                        </div>
+                    </div>
+                    
+                    <div class="logs-list" id="logs-list">
+                        <!-- 日志列表将通过JavaScript动态生成 -->
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <p>暂无日志记录</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 系统设置面板 -->
+            <section id="settings" class="panel">
+                <div class="panel-header">
+                    <h2>系统设置</h2>
+                </div>
+                
+                <div class="settings-container">
+                    <div class="settings-tabs">
+                        <div class="tab active" data-tab="basic">基本设置</div>
+                        <div class="tab" data-tab="server">服务器设置</div>
+                        <div class="tab" data-tab="storage">存储设置</div>
+                        <div class="tab" data-tab="about">关于系统</div>
+                    </div>
+                    
+                    <div class="settings-content">
+                        <div class="tab-content active" id="basic-settings">
+                            <form id="basic-settings-form">
+                                <div class="form-group">
+                                    <label for="app-name">应用名称:</label>
+                                    <input type="text" id="app-name" value="TTSHub">
+                                </div>
+                                <div class="form-group">
+                                    <label for="default-channel">默认渠道:</label>
+                                    <select id="default-channel">
+                                        <option value="">-- 无默认渠道 --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="default-voice">默认语音:</label>
+                                    <select id="default-voice">
+                                        <option value="">-- 无默认语音 --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="default-speed">默认语速:</label>
+                                    <input type="range" id="default-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                                    <span id="default-speed-value">1.0</span>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">保存设置</button>
+                                    <button type="button" class="btn btn-secondary" id="reset-basic-settings">重置</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="tab-content" id="server-settings">
+                            <form id="server-settings-form">
+                                <div class="form-group">
+                                    <label for="server-host">服务器地址:</label>
+                                    <input type="text" id="server-host" value="0.0.0.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="server-port">服务器端口:</label>
+                                    <input type="number" id="server-port" value="8080" min="1" max="65535">
+                                </div>
+                                <div class="form-group">
+                                    <label for="read-timeout">读取超时(秒):</label>
+                                    <input type="number" id="read-timeout" value="30" min="1" max="300">
+                                </div>
+                                <div class="form-group">
+                                    <label for="write-timeout">写入超时(秒):</label>
+                                    <input type="number" id="write-timeout" value="30" min="1" max="300">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">保存设置</button>
+                                    <button type="button" class="btn btn-secondary">重置</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="tab-content" id="storage-settings">
+                            <div class="storage-info">
+                                <div class="info-item">
+                                    <span class="info-label">数据库路径:</span>
+                                    <span id="db-path">./data/ttshub.db</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">数据库大小:</span>
+                                    <span id="db-size">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">最后备份:</span>
+                                    <span id="last-backup">--</span>
+                                </div>
+                            </div>
+                            <div class="storage-actions">
+                                <button class="btn btn-secondary" id="backup-db">备份数据库</button>
+                                <button class="btn btn-secondary" id="restore-db">恢复数据库</button>
+                                <button class="btn btn-secondary" id="cleanup-db">清理数据</button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="about-settings">
+                            <div class="about-info">
+                                <div class="app-logo">TTS<span>Hub</span></div>
+                                <div class="app-version">版本 1.0.0</div>
+                                <div class="app-description">
+                                    <p>多渠道TTS服务管理平台，支持OpenAI及自定义渠道的统一管理和调用。</p>
+                                </div>
+                                <div class="app-meta">
+                                    <p>开发者: TTSHub Team</p>
+                                    <p>许可证: MIT</p>
+                                    <p>更新日期: 2024-01-01</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 渠道编辑对话框 -->
+    <div id="channel-modal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">添加渠道</h3>
+                <button class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="channel-form">
+                    <input type="hidden" id="channel-id">
+                    
+                    <div class="form-group">
+                        <label for="channel-name">渠道名称:</label>
+                        <input type="text" id="channel-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="channel-type">渠道类型:</label>
+                        <select id="channel-type" required>
+                            <option value="">-- 请选择渠道类型 --</option>
+                            <option value="openai">OpenAI TTS</option>
+                            <option value="custom">自定义渠道</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="channel-description">渠道描述:</label>
+                        <textarea id="channel-description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="channel-status">状态:</label>
+                        <select id="channel-status">
+                            <option value="active">活跃</option>
+                            <option value="inactive">非活跃</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>配置详情:</label>
+                        <div id="config-editor-container">
+                            <div id="config-editor"></div>
+                            <!-- 配置编辑器将根据渠道类型动态生成 -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="test-connection" class="btn btn-secondary">测试连接</button>
+                <button id="save-channel" class="btn btn-primary">保存</button>
+                <button id="cancel-modal" class="btn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">处理中...</div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="notification" class="notification"></div>
+
+    <!-- JavaScript 脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.5/dist/axios.min.js"></script>
+    <!-- 引入JavaScript主文件 -->
+    <script src="js/main.js"></script>
+</body>
+</html>
