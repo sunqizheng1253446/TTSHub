@@ -193,16 +193,19 @@ func GetConfigCache() ConfigCache {
 
 // PreloadConfigCache 预加载配置缓存
 func PreloadConfigCache(repo ChannelRepository) error {
-	// 如果处于无数据库模式，跳过数据库操作
-	if config.NoDBMode {
-		utils.Info("无数据库模式，跳过预加载配置缓存")
+	// 如果仓库实例为nil或者处于无数据库模式，跳过数据库操作
+	if repo == nil || config.NoDBMode {
+		utils.Info("无数据库模式或仓库为nil，跳过预加载配置缓存")
 		GlobalConfigCache.RebuildFromList([]*models.ChannelConfig{})
 		return nil
 	}
 
 	channels, err := repo.ListAll()
 	if err != nil {
-		return err
+		utils.Warn("获取配置列表失败", zap.Error(err))
+		// 即使获取失败，也不中断启动过程，返回空缓存
+		GlobalConfigCache.RebuildFromList([]*models.ChannelConfig{})
+		return nil
 	}
 
 	GlobalConfigCache.RebuildFromList(channels)

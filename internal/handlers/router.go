@@ -29,8 +29,18 @@ func SetupRouter() *gin.Engine {
 	router.Use(corsMiddleware())
 
 	// 初始化服务和处理器
+	var channelRepo repository.ChannelRepository
 	db := config.GetDB()
-	channelRepo := repository.NewChannelRepository(db)
+	
+	// 检查数据库是否可用
+	if db == nil || config.NoDBMode {
+		utils.Warn("数据库不可用，创建无数据库模式仓库")
+		// 创建一个无数据库模式的仓库实例（通过传入nil db）
+		channelRepo = repository.NewChannelRepository(nil)
+	} else {
+		channelRepo = repository.NewChannelRepository(db)
+	}
+	
 	ttsService := service.NewTTSService(channelRepo)
 	ttsHandler := NewTTSHandler(ttsService)
 

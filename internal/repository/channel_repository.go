@@ -48,8 +48,8 @@ func (r *channelRepository) Create(channel *models.ChannelConfig) error {
 		return fmt.Errorf("渠道配置不能为空")
 	}
 
-	// 无数据库模式下不允许创建配置
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		return fmt.Errorf("无数据库模式下不支持创建配置")
 	}
 
@@ -92,8 +92,8 @@ func (r *channelRepository) Update(channel *models.ChannelConfig) error {
 		return fmt.Errorf("无效的渠道配置或ID")
 	}
 
-	// 无数据库模式下不允许更新配置
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		return fmt.Errorf("无数据库模式下不支持更新配置")
 	}
 
@@ -133,8 +133,8 @@ func (r *channelRepository) Delete(id uint) error {
 		return fmt.Errorf("无效的渠道ID")
 	}
 
-	// 无数据库模式下不允许删除配置
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		return fmt.Errorf("无数据库模式下不支持删除配置")
 	}
 
@@ -159,8 +159,8 @@ func (r *channelRepository) GetByID(id uint) (*models.ChannelConfig, error) {
 		return nil, fmt.Errorf("无效的渠道ID")
 	}
 
-	// 无数据库模式下返回空结果
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		return nil, fmt.Errorf("无数据库模式下不支持获取配置")
 	}
 
@@ -183,8 +183,8 @@ func (r *channelRepository) GetByName(name string) (*models.ChannelConfig, error
 		return nil, fmt.Errorf("渠道名称不能为空")
 	}
 
-	// 无数据库模式下返回空结果
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		return nil, fmt.Errorf("无数据库模式下不支持获取配置")
 	}
 
@@ -203,7 +203,8 @@ func (r *channelRepository) GetByName(name string) (*models.ChannelConfig, error
 
 // GetByType 根据类型获取渠道配置列表
 func (r *channelRepository) GetByType(channelType string) ([]*models.ChannelConfig, error) {
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		utils.Warn("无数据库模式，返回空渠道配置列表")
 		return []*models.ChannelConfig{}, nil
 	}
@@ -220,7 +221,8 @@ func (r *channelRepository) GetByType(channelType string) ([]*models.ChannelConf
 
 // ListAll 获取所有渠道配置
 func (r *channelRepository) ListAll() ([]*models.ChannelConfig, error) {
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		utils.Warn("无数据库模式，返回空渠道配置列表")
 		return []*models.ChannelConfig{}, nil
 	}
@@ -237,7 +239,8 @@ func (r *channelRepository) ListAll() ([]*models.ChannelConfig, error) {
 
 // ListEnabled 获取所有启用的渠道配置
 func (r *channelRepository) ListEnabled() ([]*models.ChannelConfig, error) {
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		utils.Warn("无数据库模式，返回空渠道配置列表")
 		return []*models.ChannelConfig{}, nil
 	}
@@ -267,8 +270,8 @@ func (r *channelRepository) UpdateStatus(id uint, status int) error {
 		return fmt.Errorf("无效的状态值: %d", status)
 	}
 
-	// 无数据库模式下不允许更新状态
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		return fmt.Errorf("无数据库模式下不支持更新配置状态")
 	}
 
@@ -293,8 +296,8 @@ func (r *channelRepository) ValidateUniqueName(name string, excludeID uint) erro
 		return fmt.Errorf("渠道名称不能为空")
 	}
 
-	// 无数据库模式下无法验证名称唯一性
-	if r.checkNoDBMode() {
+	// 优先检查数据库连接是否为空
+	if r.db == nil || config.NoDBMode {
 		return fmt.Errorf("无数据库模式下无法验证名称唯一性")
 	}
 
