@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+	"ttshub/internal/config"
 	"ttshub/internal/models"
 	"ttshub/internal/utils"
 
@@ -29,6 +30,11 @@ type channelRepository struct {
 	db *gorm.DB
 }
 
+// checkNoDBMode 检查是否处于无数据库模式
+func (r *channelRepository) checkNoDBMode() bool {
+	return config.NoDBMode || r.db == nil
+}
+
 // NewChannelRepository 创建渠道配置仓库实例
 func NewChannelRepository(db *gorm.DB) ChannelRepository {
 	return &channelRepository{
@@ -40,6 +46,11 @@ func NewChannelRepository(db *gorm.DB) ChannelRepository {
 func (r *channelRepository) Create(channel *models.ChannelConfig) error {
 	if channel == nil {
 		return fmt.Errorf("渠道配置不能为空")
+	}
+
+	// 无数据库模式下不允许创建配置
+	if r.checkNoDBMode() {
+		return fmt.Errorf("无数据库模式下不支持创建配置")
 	}
 
 	// 验证名称唯一性
@@ -81,6 +92,11 @@ func (r *channelRepository) Update(channel *models.ChannelConfig) error {
 		return fmt.Errorf("无效的渠道配置或ID")
 	}
 
+	// 无数据库模式下不允许更新配置
+	if r.checkNoDBMode() {
+		return fmt.Errorf("无数据库模式下不支持更新配置")
+	}
+
 	// 验证名称唯一性
 	if err := r.ValidateUniqueName(channel.Name, channel.ID); err != nil {
 		return err
@@ -117,6 +133,11 @@ func (r *channelRepository) Delete(id uint) error {
 		return fmt.Errorf("无效的渠道ID")
 	}
 
+	// 无数据库模式下不允许删除配置
+	if r.checkNoDBMode() {
+		return fmt.Errorf("无数据库模式下不支持删除配置")
+	}
+
 	// 执行删除
 	result := r.db.Delete(&models.ChannelConfig{}, id)
 	if result.Error != nil {
@@ -138,6 +159,11 @@ func (r *channelRepository) GetByID(id uint) (*models.ChannelConfig, error) {
 		return nil, fmt.Errorf("无效的渠道ID")
 	}
 
+	// 无数据库模式下返回空结果
+	if r.checkNoDBMode() {
+		return nil, fmt.Errorf("无数据库模式下不支持获取配置")
+	}
+
 	channel := &models.ChannelConfig{}
 	result := r.db.First(channel, id)
 	if result.Error != nil {
@@ -157,6 +183,11 @@ func (r *channelRepository) GetByName(name string) (*models.ChannelConfig, error
 		return nil, fmt.Errorf("渠道名称不能为空")
 	}
 
+	// 无数据库模式下返回空结果
+	if r.checkNoDBMode() {
+		return nil, fmt.Errorf("无数据库模式下不支持获取配置")
+	}
+
 	channel := &models.ChannelConfig{}
 	result := r.db.Where("name = ?", name).First(channel)
 	if result.Error != nil {
@@ -172,6 +203,11 @@ func (r *channelRepository) GetByName(name string) (*models.ChannelConfig, error
 
 // GetByType 根据类型获取渠道配置列表
 func (r *channelRepository) GetByType(channelType string) ([]*models.ChannelConfig, error) {
+	if r.checkNoDBMode() {
+		utils.Warn("无数据库模式，返回空渠道配置列表")
+		return []*models.ChannelConfig{}, nil
+	}
+
 	channels := []*models.ChannelConfig{}
 	result := r.db.Where("type = ?", channelType).Find(&channels)
 	if result.Error != nil {
@@ -184,6 +220,11 @@ func (r *channelRepository) GetByType(channelType string) ([]*models.ChannelConf
 
 // ListAll 获取所有渠道配置
 func (r *channelRepository) ListAll() ([]*models.ChannelConfig, error) {
+	if r.checkNoDBMode() {
+		utils.Warn("无数据库模式，返回空渠道配置列表")
+		return []*models.ChannelConfig{}, nil
+	}
+
 	channels := []*models.ChannelConfig{}
 	result := r.db.Order("created_at DESC").Find(&channels)
 	if result.Error != nil {
@@ -196,6 +237,11 @@ func (r *channelRepository) ListAll() ([]*models.ChannelConfig, error) {
 
 // ListEnabled 获取所有启用的渠道配置
 func (r *channelRepository) ListEnabled() ([]*models.ChannelConfig, error) {
+	if r.checkNoDBMode() {
+		utils.Warn("无数据库模式，返回空渠道配置列表")
+		return []*models.ChannelConfig{}, nil
+	}
+
 	channels := []*models.ChannelConfig{}
 	result := r.db.Where("status = ?", 1).Order("created_at DESC").Find(&channels)
 	if result.Error != nil {
@@ -221,6 +267,11 @@ func (r *channelRepository) UpdateStatus(id uint, status int) error {
 		return fmt.Errorf("无效的状态值: %d", status)
 	}
 
+	// 无数据库模式下不允许更新状态
+	if r.checkNoDBMode() {
+		return fmt.Errorf("无数据库模式下不支持更新配置状态")
+	}
+
 	// 执行更新
 	result := r.db.Model(&models.ChannelConfig{}).Where("id = ?", id).Update("status", status)
 	if result.Error != nil {
@@ -240,6 +291,11 @@ func (r *channelRepository) UpdateStatus(id uint, status int) error {
 func (r *channelRepository) ValidateUniqueName(name string, excludeID uint) error {
 	if name == "" {
 		return fmt.Errorf("渠道名称不能为空")
+	}
+
+	// 无数据库模式下无法验证名称唯一性
+	if r.checkNoDBMode() {
+		return fmt.Errorf("无数据库模式下无法验证名称唯一性")
 	}
 
 	query := r.db.Model(&models.ChannelConfig{}).Where("name = ?", name)

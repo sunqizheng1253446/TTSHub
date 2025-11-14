@@ -13,6 +13,9 @@ import (
 // DB 全局数据库实例
 var DB *gorm.DB
 
+// NoDBMode 无数据库模式标志
+var NoDBMode bool = false
+
 // InitDatabase 初始化数据库连接
 func InitDatabase(dbPath string) error {
 	// 配置GORM日志

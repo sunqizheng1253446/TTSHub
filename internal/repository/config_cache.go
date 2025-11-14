@@ -193,6 +193,13 @@ func GetConfigCache() ConfigCache {
 
 // PreloadConfigCache 预加载配置缓存
 func PreloadConfigCache(repo ChannelRepository) error {
+	// 如果处于无数据库模式，跳过数据库操作
+	if config.NoDBMode {
+		utils.Info("无数据库模式，跳过预加载配置缓存")
+		GlobalConfigCache.RebuildFromList([]*models.ChannelConfig{})
+		return nil
+	}
+
 	channels, err := repo.ListAll()
 	if err != nil {
 		return err

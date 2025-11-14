@@ -28,6 +28,7 @@ func main() {
 	if err := config.InitDatabase(cfg.Database.Path); err != nil {
 		utils.Warn("数据库初始化失败", zap.Error(err))
 		utils.Warn("应用将以无数据库模式运行", zap.String("mode", "no-db"))
+		config.NoDBMode = true // 设置无数据库模式标志
 		// 继续运行而不是退出
 	}
 
@@ -104,6 +105,7 @@ func initApp() {
 	if err := config.InitDatabase(cfg.Database.Path); err != nil {
 		utils.Warn("数据库初始化失败", zap.Error(err))
 		utils.Warn("应用将以无数据库模式运行", zap.String("mode", "no-db"))
+		config.NoDBMode = true // 设置无数据库模式标志
 	}
 
 	utils.Info("TTSHub服务启动")

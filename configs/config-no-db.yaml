@@ -1,0 +1,20 @@
+# TTSHub 配置文件 - 无数据库模式
+server:
+  port: "8080"
+  host: "0.0.0.0"
+
+# 临时禁用数据库以避免CGO问题
+database:
+  path: "/dev/null"
+
+log:
+  level: "info"
+  path: "./logs"
+  format: "json"
+
+openai:
+  api_key: "your_api_key_here"
+  base_url: "https://api.openai.com"
+  model: "tts-1"
+  timeout: 30
+  max_tokens: 4096
