@@ -1,3 +1,6 @@
+//go:build libsqlite3
+// +build libsqlite3
+
 package main
 
 import (
