@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  ttshub:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./configs:/app/configs
+    environment:
+      - PORT=8080
+      - DB_PATH=./data/ttshub.db
+      - LOG_LEVEL=info
+    restart: unless-stopped
